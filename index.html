@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Busca CEP</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00d2ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/535/535239.png">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --accent: #00d2ff;
+            --bg-dark: #05070a;
+            --glass: rgba(15, 23, 42, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-dark); color: white; overflow: hidden;
+        }
+
+        #map {
+            position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1;
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        .ui-layer {
+            position: relative; z-index: 10; pointer-events: none;
+            display: flex; flex-direction: column; height: 100%; padding: 20px; box-sizing: border-box;
+        }
+
+        header {
+            pointer-events: auto; background: var(--glass); backdrop-filter: blur(10px);
+            padding: 12px 20px; border-radius: 16px; border: 1px solid var(--border);
+            text-align: center; margin-bottom: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        header h1 { margin: 0; font-size: 1rem; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+
+        .content-box { pointer-events: auto; max-width: 400px; width: 100%; }
+
+        .search-card {
+            background: var(--glass); backdrop-filter: blur(15px);
+            padding: 8px; border-radius: 18px; border: 1px solid var(--border);
+            display: flex; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        input {
+            flex: 1; background: transparent; border: none; padding: 12px;
+            color: white; font-size: 16px; font-weight: 600; outline: none;
+        }
+
+        .btn-search {
+            background: var(--accent); border: none; border-radius: 12px;
+            padding: 0 15px; cursor: pointer; display: flex; align-items: center;
+            transition: 0.2s;
+        }
+
+        .btn-search:hover { opacity: 0.8; }
+
+        .result-card {
+            background: var(--glass); backdrop-filter: blur(15px);
+            padding: 20px; border-radius: 22px; border: 1px solid var(--border);
+            margin-top: 15px; animation: slideIn 0.4s ease;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .info-label { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; }
+        .info-value { font-size: 15px; font-weight: 600; display: block; margin-bottom: 10px; }
+
+        .btn-mylocation {
+            position: fixed; bottom: 40px; right: 25px;
+            width: 65px; height: 65px; background: var(--accent);
+            border-radius: 50%; border: 2px solid white; cursor: pointer;
+            z-index: 999; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);
+            transition: 0.3s; pointer-events: auto;
+        }
+
+        .btn-mylocation:active { transform: scale(0.85); }
+        
+        .btn-gps {
+            display: block; background: white; color: black; text-align: center; 
+            padding: 15px; border-radius: 12px; font-weight: 800; 
+            text-decoration: none; margin-top: 10px; transition: 0.3s;
+        }
+        
+        .btn-gps:hover { background: var(--accent); color: white; }
+
+        footer.credits {
+            margin-top: auto; pointer-events: auto;
+            background: var(--glass); backdrop-filter: blur(5px);
+            padding: 10px; border-radius: 12px; border: 1px solid var(--border);
+            font-size: 9px; color: rgba(255,255,255,0.7); text-align: center;
+            line-height: 1.4;
+        }
+        footer.credits b { color: var(--accent); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<button class="btn-mylocation" onclick="minhaLocalizacao()" title="Onde estou agora?">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M12 2v3m0 14v3m10-10h-3M5 12H2"></path>
+    </svg>
+</button>
+
+<div class="ui-layer">
+    <header><h1>Busca CEP</h1></header>
+
+    <div class="content-box">
+        <div class="search-card">
+            <input id="cep" type="tel" placeholder="00000-000" maxlength="9">
+            <button class="btn-search" onclick="buscarCEP()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </div>
+        <div id="resultado"></div>
+    </div>
+
+    <footer class="credits">
+        Desenvolvido por: <b>Claudio Almeida.CAAS</b><br>
+        Tecnologias: BrasilAPI • Leaflet • Nominatim • OpenStreetMap
+    </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log("Erro SW:", err));
+    }
+
+    var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-14.235, -51.925], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+    var markerDestino;
+    var markerUsuario;
+
+    async function minhaLocalizacao() {
+        if (!navigator.geolocation) return alert("GPS não disponível.");
+        const btn = document.querySelector('.btn-mylocation');
+        btn.style.opacity = "0.5";
+
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            btn.style.opacity = "1";
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            map.setView([lat, lon], 17);
+
+            if (markerUsuario) map.removeLayer(markerUsuario);
+            markerUsuario = L.circleMarker([lat, lon], {
+                radius: 12, fillColor: "#00d2ff", color: "#fff", weight: 4, fillOpacity: 1
+            }).addTo(map);
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                const data = await response.json();
+                const cepEncontrado = data.address.postcode || "Não identificado";
+                const ruaEncontrada = data.address.road || "Rua não identificada";
+                
+                document.getElementById("resultado").innerHTML = `
+                    <div class="result-card" style="border-left: 5px solid var(--accent)">
+                        <span class="info-label">Sua Localização Atual</span>
+                        <span class="info-value">${ruaEncontrada}</span>
+                        <span class="info-label">CEP Aproximado</span>
+                        <span class="info-value" style="color:var(--accent); font-size: 20px;">${cepEncontrado}</span>
+                    </div>
+                `;
+            } catch (e) { console.error("Erro no reverse geocoding"); }
+        }, () => {
+            btn.style.opacity = "1";
+            alert("Por favor, ative o GPS.");
+        });
+    }
+
+    async function buscarCEP() {
+        let input = document.getElementById("cep");
+        let cep = input.value.replace(/\D/g, '');
+        if (cep.length !== 8) return alert("Digite 8 números.");
+
+        document.getElementById("resultado").innerHTML = '<div class="result-card">Buscando...</div>';
+
+        try {
+            let r = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`);
+            let dados = await r.json();
+            if (dados.type === "service_error" || !dados.cep) {
+                document.getElementById("resultado").innerHTML = '<div class="result-card">CEP não encontrado.</div>';
+                return;
+            }
+            localizarNoMapa(dados);
+        } catch (e) { document.getElementById("resultado").innerHTML = '<div class="result-card">Erro de conexão.</div>'; }
+    }
+
+    async function localizarNoMapa(dados) {
+        let q = `${dados.street || ""} ${dados.city} ${dados.state} Brasil`;
+        try {
+            let geo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
+            let geoDados = await geo.json();
+
+            if (geoDados.length > 0) {
+                let lat = geoDados[0].lat;
+                let lon = geoDados[0].lon;
+                map.setView([lat, lon], 17);
+                if (markerDestino) map.removeLayer(markerDestino);
+                markerDestino = L.marker([lat, lon]).addTo(map);
+
+                const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+
+                document.getElementById("resultado").innerHTML = `
+                    <div class="result-card">
+                        <span class="info-label">Rua / Logradouro</span>
+                        <span class="info-value">${dados.street || "Endereço Geral"}</span>
+                        <span class="info-label">Bairro / Cidade</span>
+                        <span class="info-value">${dados.neighborhood || "-"} • ${dados.city}/${dados.state}</span>
+                        <a href="${googleMapsUrl}" target="_blank" class="btn-gps">INICIAR GPS</a>
+                    </div>
+                `;
+            }
+        } catch (e) { console.error("Erro geocoding"); }
+    }
+
+    const cepInput = document.getElementById('cep');
+    cepInput.addEventListener('input', e => {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5, 8);
+        e.target.value = v;
+    });
+    cepInput.addEventListener('keypress', e => { if (e.key === 'Enter') buscarCEP(); });
+</script>
+</body>
+</html>
