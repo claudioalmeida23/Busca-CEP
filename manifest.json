@@ -1,0 +1,17 @@
+{
+  "name": "Busca CEP",
+  "short_name": "BuscaCEP",
+  "description": "Busca de CEP e navegação GPS em tempo real",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#05070a",
+  "theme_color": "#00d2ff",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/535/535239.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
