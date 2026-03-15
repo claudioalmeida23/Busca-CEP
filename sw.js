@@ -1,21 +1,10 @@
-const CACHE_NAME = 'buscacep-v1';
-const ASSETS = [
-  'index.html',
-  'https://unpkg.com/leaflet/dist/leaflet.css',
-  'https://unpkg.com/leaflet/dist/leaflet.js',
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap'
-];
+const cacheName = 'busca-cep-v1';
+const assets = ['./', './index.html'];
 
-// Instalação e Cache
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(cacheName).then(cache => cache.addAll(assets)));
 });
 
-// Estratégia de Cache: Tenta rede, se falhar, usa cache
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
 });
