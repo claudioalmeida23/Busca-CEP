@@ -17,12 +17,11 @@ https://claudioalmeida23.github.io/Busca-CEP/
 
 ## 🚀 Funcionalidades
 
-* 🔍 Buscar endereço utilizando **CEP**
-* 🗺️ Visualizar o local diretamente no **mapa**
+* 🔍 Buscar endereço utilizando **CEP*
 * 📍 Mostrar **localização atual do usuário**
 * 🧭 Botão para **iniciar navegação no GPS (Google Maps)**
 * 📱 Interface otimizada para **celular**
-* ⚡ Estrutura compatível com **PWA (Progressive Web App)**
+* ⚡ Estrutura compatível com **PWA (Removida)**
 
 ---
 
