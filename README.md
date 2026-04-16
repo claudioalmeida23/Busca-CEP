@@ -6,12 +6,12 @@ O projeto utiliza **Leaflet com OpenStreetMap**, consulta dados de CEP pela **Br
 
 ---
 
-## 🌐 Acessar o site
+## 🌐 Acessar o site Versão DEMO
 
 Você pode usar a aplicação diretamente pelo link abaixo:
 
 🔎 **Buscar CEP online:**
-https://claudioalmeida23.github.io/Busca-CEP/
+(https://buscacepbrasil.netlify.app/)
 
 ---
 
