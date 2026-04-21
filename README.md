@@ -11,7 +11,7 @@ O projeto utiliza **Leaflet com OpenStreetMap**, consulta dados de CEP pela **Br
 Você pode usar a aplicação diretamente pelo link abaixo:
 
 🔎 **Buscar CEP online:**
-(https://buscacepbrasil.netlify.app/)
+(https://cepbrasil.pages.dev/))
 
 ---
 
